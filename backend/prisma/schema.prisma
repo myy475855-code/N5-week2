@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWED
+  ACCEPTED
+  REJECTED
+}
+
+model Company {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  website     String?
+  createdAt   DateTime     @default(now()) @map("created_at")
+  internships Internship[]
+
+  @@map("companies")
+}
+
+model Internship {
+  id           Int               @id @default(autoincrement())
+  companyId    Int               @map("company_id")
+  title        String
+  description  String
+  location     String
+  isRemote     Boolean           @default(false) @map("is_remote")
+  deadline     DateTime?
+  createdAt    DateTime          @default(now()) @map("created_at")
+  company      Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  applications Application[]
+  skills       InternshipSkill[]
+
+  @@index([companyId])
+  @@index([location])
+  @@map("internships")
+}
+
+model Student {
+  id           Int            @id @default(autoincrement())
+  name         String
+  email        String         @unique
+  university   String?
+  createdAt    DateTime       @default(now()) @map("created_at")
+  applications Application[]
+  skills       StudentSkill[]
+
+  @@map("students")
+}
+
+model Application {
+  id           Int               @id @default(autoincrement())
+  studentId    Int               @map("student_id")
+  internshipId Int               @map("internship_id")
+  status       ApplicationStatus @default(PENDING)
+  appliedAt    DateTime          @default(now()) @map("applied_at")
+  student      Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  internship   Internship        @relation(fields: [internshipId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, internshipId])
+  @@index([status])
+  @@index([internshipId])
+  @@map("applications")
+}
+
+model Skill {
+  id          Int               @id @default(autoincrement())
+  name        String            @unique
+  students    StudentSkill[]
+  internships InternshipSkill[]
+
+  @@map("skills")
+}
+
+model StudentSkill {
+  studentId Int     @map("student_id")
+  skillId   Int     @map("skill_id")
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  skill     Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([studentId, skillId])
+  @@index([skillId])
+  @@map("student_skills")
+}
+
+model InternshipSkill {
+  internshipId Int        @map("internship_id")
+  skillId      Int        @map("skill_id")
+  internship   Internship @relation(fields: [internshipId], references: [id], onDelete: Cascade)
+  skill        Skill      @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([internshipId, skillId])
+  @@index([skillId])
+  @@map("internship_skills")
+}

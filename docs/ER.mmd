@@ -1,0 +1,51 @@
+erDiagram
+    COMPANIES ||--o{ INTERNSHIPS : "posts"
+    INTERNSHIPS ||--o{ APPLICATIONS : "receives"
+    STUDENTS ||--o{ APPLICATIONS : "submits"
+    STUDENTS ||--o{ STUDENT_SKILLS : "has"
+    SKILLS ||--o{ STUDENT_SKILLS : "belongs to"
+    INTERNSHIPS ||--o{ INTERNSHIP_SKILLS : "requires"
+    SKILLS ||--o{ INTERNSHIP_SKILLS : "required by"
+
+    COMPANIES {
+        int id PK
+        text name UK
+        text website
+        timestamp created_at
+    }
+    INTERNSHIPS {
+        int id PK
+        int company_id FK
+        text title
+        text description
+        text location "indexed"
+        boolean is_remote
+        timestamp deadline
+        timestamp created_at
+    }
+    STUDENTS {
+        int id PK
+        text name
+        text email UK
+        text university
+        timestamp created_at
+    }
+    APPLICATIONS {
+        int id PK
+        int student_id FK
+        int internship_id FK
+        enum status "indexed"
+        timestamp applied_at
+    }
+    SKILLS {
+        int id PK
+        text name UK
+    }
+    STUDENT_SKILLS {
+        int student_id PK,FK
+        int skill_id PK,FK
+    }
+    INTERNSHIP_SKILLS {
+        int internship_id PK,FK
+        int skill_id PK,FK
+    }
